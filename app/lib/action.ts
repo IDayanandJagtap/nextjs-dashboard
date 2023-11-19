@@ -4,6 +4,7 @@ import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { redirect } from "next/navigation";
+import { signIn } from "@/auth";
 
 // Creates a schema for data validation and type coercin
 const FormSchema = z.object({
@@ -102,5 +103,19 @@ export const deleteInvoice = async (id: string) => {
         return { message: "Deleted invoice!" };
     } catch (err) {
         return { message: "Database error : Failed to delete the invoice" };
+    }
+};
+
+export const authenticate = async (
+    prevState: string | undefined,
+    formData: FormData
+) => {
+    try {
+        await signIn("credentials", Object.fromEntries(formData));
+    } catch (error) {
+        if ((error as Error).message.includes("CredentialsSignin")) {
+            return "CredentialsSignin";
+        }
+        throw error;
     }
 };
